@@ -29,7 +29,7 @@ class CategoryController extends Controller
             ->skip(($pageIndex - 1) * $perPage)
             ->take($perPage)
             ->get();
-        $brands = ProductCategory::paginate(3);
+        $brands = ProductCategory::paginate(10);
         return view('admin.category.index', compact('categories'));
     }
 
@@ -54,7 +54,7 @@ class CategoryController extends Controller
         ]);
         $category = ProductCategory::create($validatedData);
         $category->save();
-        return redirect()->route('admin.category.index')->with('mes', 'Thêm thành công');
+        return redirect()->route('admin.category.index')->with('success', 'Thêm danh mục thành công');
     }
 
     /**
@@ -86,7 +86,7 @@ class CategoryController extends Controller
 
         $category->update($validatedData);
 
-        return redirect()->route('admin.category.index')->with('mes', 'Cập nhật thành công');
+        return redirect()->route('admin.category.index')->with('success', 'Cập nhật danh mục thành công');
     }
 
     /**
