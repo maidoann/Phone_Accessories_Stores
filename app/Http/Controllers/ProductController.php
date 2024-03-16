@@ -346,31 +346,36 @@ class ProductController extends Controller
 
     public function updateImage(Request $request, $productId, $productImageId) {
         try {
+            // Kiểm tra xem sản phẩm có tồn tại không
+            $product = Product::findOrFail($productId);
+    
+            // Kiểm tra xem ảnh sản phẩm có tồn tại không
+            $productImage = ProductImage::findOrFail($productImageId);
+    
+            // Xóa tất cả các ảnh cũ của sản phẩm
+            $oldProductImages = ProductImage::where('product_id', $productId)->get();
+            foreach ($oldProductImages as $oldProductImage) {
+                $oldImagePath = public_path('products_img/') . $oldProductImage->path;
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+                $oldProductImage->delete();
+            }
+    
             // Kiểm tra xem có tệp được gửi lên không
-            if ($request->hasFile('newImages')) {
+            if ($request->hasFile('newImage')) {
                 // Validate request data
                 $validatedData = $request->validate([
-                    'newImages.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', 
+                    'newImage.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', 
                 ]);
     
-                // Xóa tất cả các ảnh cũ của sản phẩm
-                $oldImages = ProductImage::where('product_id', $productId)->get();
-                foreach ($oldImages as $oldImage) {
-                    $oldImagePath = public_path('products_img/') . $oldImage->path;
-                    if (file_exists($oldImagePath)) {
-                        unlink($oldImagePath);
-                    }
-                    $oldImage->delete();
-                }
-    
                 // Lưu các tệp ảnh mới được gửi lên và cập nhật cơ sở dữ liệu
-                foreach ($request->file('newImages') as $image) {
+                foreach ($request->file('newImage') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->extension();
                     $image->move(public_path('products_img'), $imageName);
     
                     // Tạo mới bản ghi hình ảnh
-                    ProductImage::create([
-                        'product_id' => $productId,
+                    $product->productImage()->create([
                         'path' => $imageName,
                     ]);
                 }
@@ -385,5 +390,6 @@ class ProductController extends Controller
         }
     }
     
+     
 }
 

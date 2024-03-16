@@ -119,6 +119,7 @@
 												@else
 													<img src="placeholder.jpg" alt="{{ $item->name }}">
 												@endif
+												
 												@if(strtotime($item->created_at) > strtotime('-7 days'))
 													<div class="product-label">
 														<span class="sale">-30%</span>
