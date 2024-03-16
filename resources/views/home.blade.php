@@ -119,10 +119,13 @@
 												@else
 													<img src="placeholder.jpg" alt="{{ $item->name }}">
 												@endif
-												<div class="product-label">
-													<span class="sale">-30%</span>
-													<span class="new">NEW</span>
-												</div>
+												@if(strtotime($item->created_at) > strtotime('-7 days'))
+													<div class="product-label">
+														<span class="sale">-30%</span>
+														<span class="new">NEW</span>
+													</div>
+												@endif
+
 											</div>
 											<div class="product-body">
 												<p class="product-category">{{ $item->productCategory->name }}</p>
@@ -287,10 +290,12 @@
 												@else
 													<img src="placeholder.jpg" alt="{{ $item->name }}">
 												@endif
-												<div class="product-label">
-													<span class="sale">-30%</span>
-													<span class="new">NEW</span>
-												</div>
+												@if(strtotime($item->created_at) > strtotime('-7 days'))
+													<div class="product-label">
+														<span class="sale">-30%</span>
+														<span class="new">NEW</span>
+													</div>
+												@endif
 											</div>
 											<div class="product-body">
 												<p class="product-category">{{ $item->productCategory->name }}</p>
