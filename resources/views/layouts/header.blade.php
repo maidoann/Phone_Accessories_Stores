@@ -13,10 +13,8 @@
                                     <a href="{{ route('login') }}"><i class="fa fa-user-o"></i>Đăng nhập</a>
                                 </li>
                             @endif
+							
                         	@else
-							<li>
-								<a  href="#"><i class="fa fa-dollar"></i>Ví</a>
-							</li>
                             <li>
 								<div class="dropdown">
 									<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" style="cursor: pointer;">
@@ -24,15 +22,22 @@
 									</a>
 									<div class="btn profile-dropdown">
 										<ul class="profile-list">
-											<li class="dropdown-item"><a href="{{route('profile', ['user'=>Auth::user()->id])}}">Thông tin cá nhân</a></li><hr>
-											<li class="dropdown-item"><a href="#">DS Yêu thích</a></li><hr>
-											<li class="dropdown-item"><a href="#">Giỏ hàng</a></li><hr>
-											<li class="dropdown-item"><a href="#">Cài đặt</a></li><hr>
+											<li class="dropdown-item"><a href="{{ route('profile', ['user' => Auth::user()->id]) }}">Thông tin cá nhân</a></li>
+											<hr>
+											<li class="dropdown-item"><a href="#">DS Yêu thích</a></li>
+											<hr>
+											<li class="dropdown-item"><a href="#">Giỏ hàng</a></li>
+											<hr>
+											@if(Auth::check() && Auth::user()->level == 0)
+												<li class="dropdown-item"><a href="http://127.0.0.1:8000/admin">Admin</a></li>
+												<hr>
+											@else
+												<li class="dropdown-item"><a href="#">Cài đặt</a></li>
+												<hr>
+											@endif
 											<hr style="margin-bottom: 0%;">
 											<li>
-												<a class="dropdown-item" href="{{ route('logout') }}"
-													onclick="event.preventDefault();
-																document.getElementById('logout-form').submit();">
+												<a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
 													Đăng xuất
 												</a>
 
@@ -41,6 +46,8 @@
 												</form>
 											</li>
 										</ul>
+
+
 									</div>
 								</div>
 							</li>

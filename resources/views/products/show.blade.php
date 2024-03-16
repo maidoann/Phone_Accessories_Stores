@@ -47,6 +47,7 @@
 				<div class="row">
                     <!-- Product main img -->
                     <div class="col-md-5 col-md-push-2">
+
                         <div id="product-main-img">
                             @foreach ($product->productImage as $image)
                                 <div class="product-preview">
@@ -147,18 +148,9 @@
                                     </form>
                                 </div>
                                 <!-- Thêm vào yêu thích và so sánh sản phẩm -->
-                                <ul class="product-btns">
-                                    <li>
-                                        <form action="{{ route('favorites.store') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                            <button type="submit" class="btn btn-link p-0" style="background-color: transparent; border: none; text-decoration: none; color: black;">
-                                                <i class="fa fa-heart-o"></i> Thêm vào yêu thích
-                                            </button>
-                                        </form>
-                                    </li>
-                                    <!-- <li><a href="#"><i class="fa fa-exchange"></i>So sánh</a></li> -->
-                                </ul>
+                                <button class="add-to-wishlist" data-product-id="{{ $product->id }}" style="border: none; background: none; padding: 0; margin: 0; font: inherit; cursor: pointer;">
+                                    <i class="fa fa-heart-o"></i> Thêm vào yêu thích
+                                </button>
 
                                 <!-- Danh mục của sản phẩm  -->
                                 <ul class="product-links">
@@ -404,7 +396,12 @@
                                                 Không có sản phẩm tương tự
                                             @endif
                                         </p>
-                                        <h3 class="product-name"><a href="#">{{ $pr->name }}</a></h3>
+                                        <h3 class="product-name"><a href="{{route('products.show',  $pr->id)}}">{{ $pr->name }}</a></h3>
+                                        @php
+                                        $price = $pr->productDetail->min('price');
+                                        $formattedPrice = number_format($price, 0, ',', '.');
+                                        $PriceX = number_format($price * 1.3, 0, ',', '.');
+                                         @endphp
                                         <h4 class="product-price">
                                             <!-- Lấy giá và giá cũ của sản phẩm -->
                                             @if($pr->productDetail->count() > 0)
@@ -421,8 +418,22 @@
                                         </div>
                                     </div>
                                     <div class="add-to-cart">
-                                        <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i>Thêm vào giỏ hàng</button>
-                                    </div>
+                                    <form action="{{ route('carts.store') }}" method="POST" class="add-to-cart-form">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <input type="hidden" name="price" value="{{ $formattedPrice }}">
+
+                                            <div class="input-number">
+                                                <input type="hidden" id="quantityInput" type="number" name="quantity" value="1" >
+                                            </div>
+                                            @if ($pr->quantity > 0)
+                                                <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
+                                            @else
+                                                <button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
+                                            @endif
+                                    </form>
+                                </div>
+
                                 </div>
                             </div>
                         @endforeach
@@ -431,5 +442,48 @@
             </div>
         </div>
         <!-- /Related Products -->
+
+        
+<script>
+    $(document).ready(function() {
+        $('.add-to-wishlist').on('click', function(event) {
+            event.preventDefault(); // Ngăn chặn hành động mặc định của nút
+
+            var productId = $(this).data('product-id'); // Lấy id của sản phẩm từ data attribute
+
+            $.ajax({
+                url: "{{ route('favorites.store') }}", // URL của route xử lý việc thêm vào danh sách yêu thích
+                method: "POST",
+                data: {
+                    product_id: productId,
+                    _token: "{{ csrf_token() }}" // Token CSRF
+                },
+                success: function(response) {
+                    // Hiển thị toast thành công bằng SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sản phẩm đã được thêm vào danh sách yêu thích.',
+                        position: 'top-end', // Hiển thị ở góc trên cùng bên phải
+                        timer: 3000, // Thời gian tự động đóng (miliseconds)
+                        toast: true,
+                        showConfirmButton: false // Ẩn nút xác nhận
+                    });
+                },
+                error: function(xhr, status, error) {
+                    // Hiển thị toast lỗi bằng SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đã xảy ra lỗi!',
+                        text: 'Có lỗi xảy ra khi thêm sản phẩm vào danh sách yêu thích.',
+                        position: 'top-end', // Hiển thị ở góc trên cùng bên phải
+                        timer: 3000, // Thời gian tự động đóng (miliseconds)
+                        toast: true,
+                        showConfirmButton: false // Ẩn nút xác nhận
+                    });
+                }
+            });
+        });
+    });
+</script>
 
 @endsection

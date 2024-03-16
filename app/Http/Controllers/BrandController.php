@@ -29,7 +29,7 @@ class BrandController extends Controller
             ->skip(($pageIndex - 1) * $perPage)
             ->take($perPage)
             ->get();
-        $brands = Brand::paginate(5);
+        $brands = Brand::paginate(10);
         return view('admin.brand.index', compact('brands'));
     }
 
@@ -54,7 +54,7 @@ class BrandController extends Controller
         ]);
         $brand = Brand::create($validatedData);
         $brand->save();
-        return redirect()->route('brand.index')->with('mes', 'Thêm thành công');
+        return redirect()->route('brand.index')->with('success', 'Thêm thương hiệu thành công');
     }
 
     /**
@@ -86,7 +86,7 @@ class BrandController extends Controller
 
         $brand->update($validatedData);
 
-        return redirect()->route('brand.index')->with('mes', 'Sửa thành công');
+        return redirect()->route('brand.index')->with('success', 'Sửa thương hiệu thành công');
     }
 
 
