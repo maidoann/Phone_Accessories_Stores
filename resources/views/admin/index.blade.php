@@ -152,9 +152,10 @@
             }]
         },
         options: {
-        // Các cấu hình khác nếu cần
-    }
+        responsive: true, // Cho phép biểu đồ thích ứng với kích thước của container
+        maintainAspectRatio: false, // Tắt việc duy trì tỷ lệ khung hình mặc định
 
+    }   
     });
 
 
@@ -172,6 +173,11 @@
                 borderWidth: 1
             }]
         },
+        options: {
+        responsive: true, // Cho phép biểu đồ thích ứng với kích thước của container
+        maintainAspectRatio: false, // Tắt việc duy trì tỷ lệ khung hình mặc định
+
+    }
     });
 </script>
 

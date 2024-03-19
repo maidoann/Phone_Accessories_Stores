@@ -41,6 +41,10 @@ Route::delete('admin/category/{category}', [CategoryController::class, 'destroy'
 
 // Route product
 Route::resource('products', ProductController::class);
+Route::post('/product/color/select/{id}', [ProductController::class, 'selectColor'])->name('product.color.select');
+
+Route::get('/products/{productId}/details/{productDetailId?}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{productId}/{productDetailId}', 'ProductController@showProductWithDetail')->name('products.show.detail');
 Route::get('/admin/products/{productId}/{productDetailId}/edit', [ProductController::class, 'editProduct'])->name('admin.products.edit');
 Route::put('/products/{productId}/{productDetailId}', [ProductController::class, 'updateProduct'])->name('admin.products.update');
 Route::delete('/products/{productId}/{productDetailId}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
