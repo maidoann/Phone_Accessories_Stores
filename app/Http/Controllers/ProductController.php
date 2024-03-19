@@ -117,37 +117,65 @@ class ProductController extends Controller
 
     
 
-    public function show(string $id)
-    {
-        //$totalQuantity = ProductDetail::where('product_id', $product->id)->sum('quantity');
-        //$product->update(['quantity' => $totalQuantity]);
-        $product = Product::with('productImage', 'productDetail', 'productComment')->findOrFail($id);
-
-        $commentsPerPage = 3;
-        $comments = $product->productComment()->paginate($commentsPerPage);
-        $categoryId = $product->product_category_id;
-        $relatedProducts = Product::where('product_category_id', $categoryId)
-            ->where('id', '!=', $product->id)
-            ->inRandomOrder()
-            ->limit(3)
-            ->get();
-        
-        // Kiểm tra xem người dùng đã đăng nhập hay chưa
-        if (Auth::check()) {
-            // Lấy ID của người dùng hiện tại
-            $userId = Auth::id();
-            // Kiểm tra xem người dùng đã từng mua sản phẩm này hay không
-            $userBoughtProduct = $product->orders()->where('user_id', $userId)->exists();
-
-        } else {
-            // Nếu người dùng chưa đăng nhập, không cần kiểm tra
-            $userBoughtProduct = false;
-
-        }
-        // Truyền dữ liệu vào view
-        return view('products.show', compact('product', 'comments', 'relatedProducts', 'userBoughtProduct'));
+public function show($productId, $productDetailId = null)
+{
+    // Tìm kiếm thông tin sản phẩm
+    $product = Product::with('productImage', 'productComment')->findOrFail($productId);
+    $selectedColor = '';
+    
+    // Lấy chi tiết sản phẩm tương ứng hoặc chi tiết sản phẩm đầu tiên nếu không có productDetailId
+    if ($productDetailId) {
+        $productDetail = ProductDetail::findOrFail($productDetailId);
+    } else {
+        // Nếu không có productDetailId, lấy chi tiết sản phẩm đầu tiên của sản phẩm
+        $productDetail = $product->productDetail->first();
     }
 
+    // Lấy bình luận và sản phẩm liên quan
+    $commentsPerPage = 3;
+    $comments = $product->productComment()->paginate($commentsPerPage);
+    $categoryId = $product->product_category_id;
+    $relatedProducts = Product::where('product_category_id', $categoryId)
+        ->where('id', '!=', $product->id)
+        ->inRandomOrder()
+        ->limit(3)
+        ->get();
+    
+    // Kiểm tra xem người dùng đã đăng nhập và có mua sản phẩm hay không
+    $userBoughtProduct = false;
+    if (Auth::check()) {
+        $userId = Auth::id();
+        $userBoughtProduct = $product->orders()->where('user_id', $userId)->exists();
+    }
+
+    // Truyền dữ liệu vào view
+    return view('products.show', compact('product', 'productDetail', 'comments', 'relatedProducts', 'userBoughtProduct', 'selectedColor'));
+}
+
+
+public function selectColor(Request $request, $id)
+{
+    // Lấy thông tin sản phẩm gốc
+    $product = Product::findOrFail($id);
+
+    // Lấy giá trị màu sắc được chọn từ form
+    $selectedColor = $request->input('color');
+
+    // Gán giá trị cho biến $selectedColor
+
+    // Lấy thông tin sản phẩm mới dựa trên màu sắc được chọn
+    $newProductDetail = ProductDetail::where('product_id', $id)
+        ->where('color', $selectedColor)
+        ->firstOrFail();
+
+    // Redirect người dùng trở lại trang sản phẩm với thông tin sản phẩm mới
+    return redirect()->route('products.show', ['productId' => $product->id, 'productDetailId' => $newProductDetail->id])
+                     ->with('selectedColor', $selectedColor);
+}
+
+
+    
+    
 
     public function edit()
     {
