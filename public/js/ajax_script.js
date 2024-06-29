@@ -355,11 +355,7 @@ function addCart(){
     $('.add-to-cart-form').off('submit').on('submit', function(e) {
         e.preventDefault(); // Ngăn chặn việc gửi form một cách thông thường
         var formData = $(this).serialize(); // Lấy dữ liệu từ form
-        
-        // Thêm dữ liệu màu được chọn vào formData
-        var selectedColor = $('#colorSelect').val();
-        formData += '&color=' + selectedColor;
-
+        console.log(formData);
         $.ajax({
             type: 'POST',
             url: $(this).attr('action'),
@@ -368,7 +364,7 @@ function addCart(){
                 // Hiển thị toast thành công bằng SweetAlert
                 Swal.fire({
                     icon: 'success',
-                    title: 'Sản phẩm đã được thêm vào giỏ hàng',
+                    title: 'Sản phẩm đã đươc thêm vào giỏ hàng',
                     text: response.message,
                     toast: true,
                     position: 'top-end', // Hiển thị ở góc trên cùng bên phải
@@ -391,62 +387,3 @@ function addCart(){
         });
     });
 }
-
-function addComment() {
-    $('.review-form').off('submit').on('submit', function(e) {
-        e.preventDefault(); // Ngăn chặn việc gửi form một cách thông thường
-        var formData = $(this).serialize(); // Lấy dữ liệu từ form
-
-        $.ajax({
-            type: 'POST',
-            url: $(this).attr('action'),
-            data: formData,
-            success: function (response) {
-                // Hiển thị toast thành công bằng SweetAlert
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Đánh giá của bạn đã được gửi thành công!',
-                    text: response.message,
-                    toast: true,
-                    position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                    timer: 3000, // Thời gian tự động đóng (miliseconds)
-                    showConfirmButton: false, // Ẩn nút xác nhận
-                });
-
-                // Xóa nội dung của form sau khi gửi thành công
-                $('.review-form textarea').val('');
-
-                // Load lại trang sau khi hiển thị thông báo
-                setTimeout(function() {
-                    location.reload();
-                }, 100); // Load lại trang sau 3 giây (giống thời gian của toast)
-            },
-            error: function (xhr, status, error) {
-                // Hiển thị toast lỗi bằng SweetAlert
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: xhr.responseJSON.message,
-                    toast: true,
-                    position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                    timer: 3000, // Thời gian tự động đóng (miliseconds)
-                    showConfirmButton: false, // Ẩn nút xác nhận
-                });
-            }
-        });
-    });
-}
-
-
-document.addEventListener("DOMContentLoaded", function() {
-    // Lắng nghe sự kiện change của dropdown màu sắc
-    var colorSelect = document.getElementById('colorSelect');
-    if (colorSelect) {
-        colorSelect.addEventListener('change', function() {
-            // Khi dropdown thay đổi, kích hoạt sự kiện submit của form
-            document.getElementById('colorForm').submit();
-        });
-    }
-});
-
-

@@ -41,10 +41,6 @@ Route::delete('admin/category/{category}', [CategoryController::class, 'destroy'
 
 // Route product
 Route::resource('products', ProductController::class);
-Route::post('/product/color/select/{id}', [ProductController::class, 'selectColor'])->name('product.color.select');
-
-Route::get('/products/{productId}/details/{productDetailId?}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/products/{productId}/{productDetailId}', 'ProductController@showProductWithDetail')->name('products.show.detail');
 Route::get('/admin/products/{productId}/{productDetailId}/edit', [ProductController::class, 'editProduct'])->name('admin.products.edit');
 Route::put('/products/{productId}/{productDetailId}', [ProductController::class, 'updateProduct'])->name('admin.products.update');
 Route::delete('/products/{productId}/{productDetailId}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
@@ -89,16 +85,3 @@ Route::get('/order-success/{order}', [OrderController::class, 'orderSuccess'])->
 
 Route::get('/admin/order/', [AdminOrderController::class, 'index'])->name('admin.order.index');
 Route::get('/admin/order/show/{order}', [AdminOrderController::class, 'show'])->name('admin.order.show');
-
-Route::post('/admin/filter', [AdminController::class, 'filter'])->name('admin.filter');
-
-// routes/web.php
-
-Route::get('/check-login', function() {
-    if (Auth::check()) {
-        return response()->json(['loggedIn' => true]);
-    } else {
-        return response()->json(['loggedIn' => false]);
-    }
-});
-

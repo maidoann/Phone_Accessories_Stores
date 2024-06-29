@@ -29,7 +29,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <ul class="breadcrumb-tree">
-                        <li><a href="{{route('home')}}">Trang Chủ</a></li>
+                        <li><a href="{{route('home')}}">Nhà</a></li>
                         <li><a href="{{route('products.index')}}">Tất cả các danh mục</a></li>
                         <li><a href=""data-key="{{ $product->productBrand->name }}">{{ $product->productBrand->name }}</a></li>
                         <li class="active">{{ $product->name }}</li>
@@ -38,6 +38,38 @@
             </div>
         </div>
     </div>
+    <div>
+        @if(session('success'))
+            <div id="alertSuccess" class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div id="alertError" class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <script>
+            // Ensure the entire page has loaded before executing JavaScript code
+            document.addEventListener("DOMContentLoaded", function() {
+                // Use JavaScript to hide the alerts after a certain period of time
+                setTimeout(function() {
+                    var alertSuccess = document.getElementById('alertSuccess');
+                    if (alertSuccess) {
+                        alertSuccess.style.display = 'none';
+                    }
+
+                    var alertError = document.getElementById('alertError');
+                    if (alertError) {
+                        alertError.style.display = 'none';
+                    }
+                }, 3000); // 2 seconds
+            });
+        </script>
+    </div>
+
     <!-- /BREADCRUMB -->
     <!-- SECTION -->
 		<div class="section">
@@ -95,77 +127,68 @@
 
                                 <!-- Hiển thị chi tiết sản phẩm - Số lượng - Size - Màu -->
                                 <div>
-                                @if ($productDetail && $productDetail->price)
                                     @php
-                                        $price = $productDetail->price;
+                                        $price = $product->productDetail->min('price');
                                         $formattedPrice = number_format($price, 0, ',', '.');
                                         $PriceX = number_format($price * 1.3, 0, ',', '.');
                                     @endphp
                                     <h3 class="product-price">{{ $formattedPrice }} VND<del class="product-old-price">{{ $PriceX }}</del></h3>
                                     <span class="product-available">
-                                        @if ($productDetail->quantity > 0)
-                                            Số lượng ({{ $productDetail->quantity }})
+                                        @if ($product->quantity > 0)
+                                            Số lượng ({{ $product->quantity }})
                                         @else
                                             Hết Hàng
                                         @endif
                                     </span>
-                                @endif
-
                                 </div>
                                 <!-- Mô tả sản phẩm -->
                                 <p>{{ $product->description }}</p>
 
                                 <!-- Các lựa chọn size và màu -->
                                 <div class="product-options">
-                                    <form id="colorForm" action="{{ route('product.color.select', ['id' => $product->id]) }}" method="POST">
-                                        @csrf
-                                        <label>
-                                            Màu sắc
-                                            <select id="colorSelect" name="color" class="input-select">
+                                    <label>
+                                        Màu sắc
+                                        <select class="input-select">
                                             @foreach ($product->productDetail as $detail)
                                                 @if ($detail->color)
-                                                    <option value="{{ $detail->color }}" @if ($detail->color == session('selectedColor')) selected @endif>{{ $detail->color }}</option>
+                                                    <option value="{{ $detail->color }}">{{ $detail->color }}</option>
                                                 @endif
                                             @endforeach
                                         </select>
-                                        </label>
+                                    </label>
+                                </div>
+                                <!-- Số lượng sản phẩm và nút thêm vào giỏ hàng -->
+                                <div class="add-to-cart">
+                                    <form action="{{ route('carts.store') }}" method="POST" class="add-to-cart-form">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <input type="hidden" name="price" value="{{ $formattedPrice }}">
+
+                                        <div class="qty-label">
+                                            Số lượng
+                                            <div class="input-number">
+                                                <input id="quantityInput" type="number" name="quantity" value="1" min="1" max="{{ $product->quantity }}" onchange="if(parseInt(this.value) < parseInt(this.min)) this.value = this.min; if(parseInt(this.value) > parseInt(this.max)) this.value = this.max;">
+                                                <span class="qty-up">+</span>
+                                                <span class="qty-down">-</span>
+                                            </div>
+                                        </div>
+                                        @if ($product->quantity > 0)
+                                            <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
+                                        @else
+                                            <button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
+                                        @endif
                                     </form>
                                 </div>
-
-                                <script>
-                                    // Lắng nghe sự kiện change của dropdown màu sắc
-                                    document.getElementById('colorSelect').addEventListener('change', function() {
-                                        // Khi dropdown thay đổi, kích hoạt sự kiện submit của form
-                                        document.getElementById('colorForm').submit();
-                                    });
-                                </script>
-                            </div>
-                            <!-- Số lượng sản phẩm và nút thêm vào giỏ hàng -->
-                            <div class="add-to-cart">
-                                <form action="{{ route('carts.store') }}" method="POST" class="add-to-cart-form">
+                                <!-- Thêm vào yêu thích và so sánh sản phẩm -->
+                                <form action="{{ route('favorites.store') }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <input type="hidden" name="price" value="{{ $formattedPrice }}">
-
-                                    <div class="qty-label">
-                                        Số lượng
-                                        <div class="input-number">
-                                            <input id="quantityInput" type="number" name="quantity" value="1" min="1" max="{{ $productDetail->quantity }}" onchange="if(parseInt(this.value) < parseInt(this.min)) this.value = this.min; if(parseInt(this.value) > parseInt(this.max)) this.value = this.max;">
-                                            <span class="qty-up">+</span>
-                                            <span class="qty-down">-</span>
-                                        </div>
-                                    </div>
-                                    @if ($productDetail->quantity > 0)
-                                        <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-                                    @else
-                                        <button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
-                                    @endif
+                                    <button type="submit" class="btn btn-link p-0" style="background-color: transparent; border: none; text-decoration: none; color: black;">
+                                        <i class="fa fa-heart-o"></i> Thêm vào yêu thích
+                                    </button>
                                 </form>
-                            </div>
-                            <!-- Thêm vào yêu thích và so sánh sản phẩm -->
-                            <button class="add-to-wishlist" data-product-id="{{ $productDetail->id }}" style="border: none; background: none; padding: 0; margin: 0; font: inherit; cursor: pointer;">
-                                <i class="fa fa-heart-o"></i> Thêm vào yêu thích
-                            </button>
+
+
 
                                 <!-- Danh mục của sản phẩm  -->
                                 <ul class="product-links">
@@ -364,13 +387,6 @@
                                         <!-- /Review Form -->
                                     </div>
                                 </div>
-                                
-                                <script>
-                                    // Gọi hàm addComment khi tải trang hoàn tất
-                                    $(document).ready(function() {
-                                        addComment();
-                                    });
-                                </script>
                                 <!-- /tab3 -->
 
 							</div>
@@ -418,14 +434,7 @@
                                                 Không có sản phẩm tương tự
                                             @endif
                                         </p>
-                                        <h3 class="product-name"><a href="{{ route('products.show', ['productId' => $pr->id]) }}">{{ $pr->name }}</a></h3>
-
-
-                                        @php
-                                        $price = $pr->productDetail->min('price');
-                                        $formattedPrice = number_format($price, 0, ',', '.');
-                                        $PriceX = number_format($price * 1.3, 0, ',', '.');
-                                         @endphp
+                                        <h3 class="product-name"><a href="#">{{ $pr->name }}</a></h3>
                                         <h4 class="product-price">
                                             <!-- Lấy giá và giá cũ của sản phẩm -->
                                             @if($pr->productDetail->count() > 0)
@@ -450,11 +459,11 @@
                                             <div class="input-number">
                                                 <input type="hidden" id="quantityInput" type="number" name="quantity" value="1" >
                                             </div>
-                                            @if ($pr->quantity > 0)
-                                                <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-                                            @else
-                                                <button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
-                                            @endif
+                                        @if ($product->quantity > 0)
+                                            <button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
+                                        @else
+                                            <button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
+                                        @endif
                                     </form>
                                 </div>
 
@@ -466,48 +475,5 @@
             </div>
         </div>
         <!-- /Related Products -->
-
-        
-<script>
-    $(document).ready(function() {
-        $('.add-to-wishlist').on('click', function(event) {
-            event.preventDefault(); // Ngăn chặn hành động mặc định của nút
-
-            var productId = $(this).data('product-id'); // Lấy id của sản phẩm từ data attribute
-
-            $.ajax({
-                url: "{{ route('favorites.store') }}", // URL của route xử lý việc thêm vào danh sách yêu thích
-                method: "POST",
-                data: {
-                    product_id: productId,
-                    _token: "{{ csrf_token() }}" // Token CSRF
-                },
-                success: function(response) {
-                    // Hiển thị toast thành công bằng SweetAlert
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sản phẩm đã được thêm vào danh sách yêu thích.',
-                        position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                        timer: 3000, // Thời gian tự động đóng (miliseconds)
-                        toast: true,
-                        showConfirmButton: false // Ẩn nút xác nhận
-                    });
-                },
-                error: function(xhr, status, error) {
-                    // Hiển thị toast lỗi bằng SweetAlert
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Đã xảy ra lỗi!',
-                        text: 'Có lỗi xảy ra khi thêm sản phẩm vào danh sách yêu thích.',
-                        position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                        timer: 3000, // Thời gian tự động đóng (miliseconds)
-                        toast: true,
-                        showConfirmButton: false // Ẩn nút xác nhận
-                    });
-                }
-            });
-        });
-    });
-</script>
 
 @endsection

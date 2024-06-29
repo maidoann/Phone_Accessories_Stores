@@ -21,8 +21,8 @@
     <link href="{{asset('css/main.css')}}" rel="stylesheet">
     <link href="{{asset('css/my_style.css')}}" rel="stylesheet">
     <!-- Các thư viện Swal -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
 </head>
 
@@ -136,7 +136,6 @@
     <script src="{{asset('js/main.js')}}"></script>
     <script src="{{asset('js/main-admin.js')}}"></script>
     <script src="{{asset('js/ajax_script.js')}}"></script>
-    
 </body>
 
 </html>

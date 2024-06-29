@@ -9,13 +9,7 @@ use App\Models\ProductFavorite;
 use App\Models\ProductFavoriteDetail;
 
 class ProductFavoriteController extends Controller
-
 {
-    public function __construct()
-{
-    $this->middleware('auth')->only('store');
-}
-
     public function index()
     {
         if (!Auth::check()) {

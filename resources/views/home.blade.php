@@ -119,14 +119,10 @@
 												@else
 													<img src="placeholder.jpg" alt="{{ $item->name }}">
 												@endif
-												
-												@if(strtotime($item->created_at) > strtotime('-7 days'))
-													<div class="product-label">
-														<span class="sale">-30%</span>
-														<span class="new">NEW</span>
-													</div>
-												@endif
-
+												<div class="product-label">
+													<span class="sale">-30%</span>
+													<span class="new">NEW</span>
+												</div>
 											</div>
 											<div class="product-body">
 												<p class="product-category">{{ $item->productCategory->name }}</p>
@@ -176,11 +172,7 @@
 														<input type="hidden" name="price" value="{{$formattedPrice}}  ">
 														<input type="hidden" name="quantity" value="1"> <!-- Số lượng mặc định -->
 														
-														@if ($item->quantity > 0)
-															<button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-														@else
-															<button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
-														@endif
+														<button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
 												</form>
 											</div>
 										</div>
@@ -291,12 +283,10 @@
 												@else
 													<img src="placeholder.jpg" alt="{{ $item->name }}">
 												@endif
-												@if(strtotime($item->created_at) > strtotime('-7 days'))
-													<div class="product-label">
-														<span class="sale">-30%</span>
-														<span class="new">NEW</span>
-													</div>
-												@endif
+												<div class="product-label">
+													<span class="sale">-30%</span>
+													<span class="new">NEW</span>
+												</div>
 											</div>
 											<div class="product-body">
 												<p class="product-category">{{ $item->productCategory->name }}</p>
@@ -338,11 +328,7 @@
 														<input type="hidden" name="price" value="{{$formattedPrice}}  ">
 														<input type="hidden" name="quantity" value="1"> <!-- Số lượng mặc định -->
 														
-														@if ($item->quantity > 0)
-															<button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
-														@else
-															<button type="button" class="add-to-cart-btn" disabled><i class="fa fa-shopping-cart"></i>Hết hàng</button>
-														@endif
+														<button type="submit" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng</button>
 												</form>
 											</div>
 										</div>
@@ -501,59 +487,5 @@
 			<!-- /container -->
 		</div>
 		<!-- /SECTION -->
-
-		<script>
-    $(document).ready(function() {
-        $('.add-to-wishlist').on('click', function(event) {
-            event.preventDefault(); // Ngăn chặn hành động mặc định của nút
-
-            var productId = $(this).data('product-id'); // Lấy id của sản phẩm từ data attribute
-
-            // Kiểm tra xem người dùng đã đăng nhập hay chưa
-            if ("{{ Auth::check() }}") {
-                // Nếu đã đăng nhập, thực hiện yêu cầu Ajax
-                $.ajax({
-                    url: "{{ route('favorites.store') }}", // URL của route xử lý việc thêm vào danh sách yêu thích
-                    method: "POST",
-                    data: {
-                        product_id: productId,
-                        _token: "{{ csrf_token() }}" // Token CSRF
-                    },
-                    success: function(response) {
-                        // Hiển thị toast thành công bằng SweetAlert
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Sản phẩm đã được thêm vào danh sách yêu thích.',
-                            position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                            timer: 3000, // Thời gian tự động đóng (miliseconds)
-                            toast: true,
-                            showConfirmButton: false // Ẩn nút xác nhận
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        // Hiển thị toast lỗi bằng SweetAlert
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Đã xảy ra lỗi!',
-                            text: 'Có lỗi xảy ra khi thêm sản phẩm vào danh sách yêu thích.',
-                            position: 'top-end', // Hiển thị ở góc trên cùng bên phải
-                            timer: 3000, // Thời gian tự động đóng (miliseconds)
-                            toast: true,
-                            showConfirmButton: false // Ẩn nút xác nhận
-                        });
-                    }
-                });
-            } else {
-                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập và lưu trữ URL trước đó
-                var previousUrl = window.location.href;
-                window.location.href = "{{ route('login') }}?redirect=" + encodeURIComponent(previousUrl);
-            }
-
-            return false; // Ngăn chặn trình duyệt gửi lại yêu cầu
-        });
-    });
-</script>
-
-
 
 @endsection

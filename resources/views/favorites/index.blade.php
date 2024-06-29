@@ -69,7 +69,8 @@
                               @endif
                             </div>
                         </td>
-                        <td class="border-0 align-middle"><a href="{{ route('products.show', ['productId' => $product->id]) }}"><strong>{{ $product->name }}</strong></a></td>
+                        <td class="border-0 align-middle"><strong>{{ $product->name }}</strong></td>
+
                         <td class="border-0 align-middle"><strong>{{$product->productDetail->min('price')}}</strong></td>
                         <td>
                         <form class="d-inline" action="{{ route('favorites.destroy', $product->id) }}" method="post">

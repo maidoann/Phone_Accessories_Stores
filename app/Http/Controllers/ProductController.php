@@ -117,65 +117,36 @@ class ProductController extends Controller
 
     
 
-public function show($productId, $productDetailId = null)
-{
-    // Tìm kiếm thông tin sản phẩm
-    $product = Product::with('productImage', 'productComment')->findOrFail($productId);
-    $selectedColor = '';
-    
-    // Lấy chi tiết sản phẩm tương ứng hoặc chi tiết sản phẩm đầu tiên nếu không có productDetailId
-    if ($productDetailId) {
-        $productDetail = ProductDetail::findOrFail($productDetailId);
-    } else {
-        // Nếu không có productDetailId, lấy chi tiết sản phẩm đầu tiên của sản phẩm
-        $productDetail = $product->productDetail->first();
+    public function show(string $id)
+    {
+        //$totalQuantity = ProductDetail::where('product_id', $product->id)->sum('quantity');
+        //$product->update(['quantity' => $totalQuantity]);
+        $product = Product::with('productImage', 'productDetail', 'productComment')->findOrFail($id);
+        $commentsPerPage = 3;
+        $comments = $product->productComment()->paginate($commentsPerPage);
+        $categoryId = $product->product_category_id;
+        $relatedProducts = Product::where('product_category_id', $categoryId)
+            ->where('id', '!=', $product->id)
+            ->inRandomOrder()
+            ->limit(3)
+            ->get();
+        
+        // Kiểm tra xem người dùng đã đăng nhập hay chưa
+        if (Auth::check()) {
+            // Lấy ID của người dùng hiện tại
+            $userId = Auth::id();
+            // Kiểm tra xem người dùng đã từng mua sản phẩm này hay không
+            $userBoughtProduct = $product->orders()->where('user_id', $userId)->exists();
+
+        } else {
+            // Nếu người dùng chưa đăng nhập, không cần kiểm tra
+            $userBoughtProduct = false;
+
+        }
+        // Truyền dữ liệu vào view
+        return view('products.show', compact('product', 'comments', 'relatedProducts', 'userBoughtProduct'));
     }
 
-    // Lấy bình luận và sản phẩm liên quan
-    $commentsPerPage = 3;
-    $comments = $product->productComment()->paginate($commentsPerPage);
-    $categoryId = $product->product_category_id;
-    $relatedProducts = Product::where('product_category_id', $categoryId)
-        ->where('id', '!=', $product->id)
-        ->inRandomOrder()
-        ->limit(3)
-        ->get();
-    
-    // Kiểm tra xem người dùng đã đăng nhập và có mua sản phẩm hay không
-    $userBoughtProduct = false;
-    if (Auth::check()) {
-        $userId = Auth::id();
-        $userBoughtProduct = $product->orders()->where('user_id', $userId)->exists();
-    }
-
-    // Truyền dữ liệu vào view
-    return view('products.show', compact('product', 'productDetail', 'comments', 'relatedProducts', 'userBoughtProduct', 'selectedColor'));
-}
-
-
-public function selectColor(Request $request, $id)
-{
-    // Lấy thông tin sản phẩm gốc
-    $product = Product::findOrFail($id);
-
-    // Lấy giá trị màu sắc được chọn từ form
-    $selectedColor = $request->input('color');
-
-    // Gán giá trị cho biến $selectedColor
-
-    // Lấy thông tin sản phẩm mới dựa trên màu sắc được chọn
-    $newProductDetail = ProductDetail::where('product_id', $id)
-        ->where('color', $selectedColor)
-        ->firstOrFail();
-
-    // Redirect người dùng trở lại trang sản phẩm với thông tin sản phẩm mới
-    return redirect()->route('products.show', ['productId' => $product->id, 'productDetailId' => $newProductDetail->id])
-                     ->with('selectedColor', $selectedColor);
-}
-
-
-    
-    
 
     public function edit()
     {
@@ -374,36 +345,31 @@ public function selectColor(Request $request, $id)
 
     public function updateImage(Request $request, $productId, $productImageId) {
         try {
-            // Kiểm tra xem sản phẩm có tồn tại không
-            $product = Product::findOrFail($productId);
-    
-            // Kiểm tra xem ảnh sản phẩm có tồn tại không
-            $productImage = ProductImage::findOrFail($productImageId);
-    
-            // Xóa tất cả các ảnh cũ của sản phẩm
-            $oldProductImages = ProductImage::where('product_id', $productId)->get();
-            foreach ($oldProductImages as $oldProductImage) {
-                $oldImagePath = public_path('products_img/') . $oldProductImage->path;
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
-                $oldProductImage->delete();
-            }
-    
             // Kiểm tra xem có tệp được gửi lên không
-            if ($request->hasFile('newImage')) {
+            if ($request->hasFile('newImages')) {
                 // Validate request data
                 $validatedData = $request->validate([
-                    'newImage.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', 
+                    'newImages.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048', 
                 ]);
     
+                // Xóa tất cả các ảnh cũ của sản phẩm
+                $oldImages = ProductImage::where('product_id', $productId)->get();
+                foreach ($oldImages as $oldImage) {
+                    $oldImagePath = public_path('products_img/') . $oldImage->path;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                    $oldImage->delete();
+                }
+    
                 // Lưu các tệp ảnh mới được gửi lên và cập nhật cơ sở dữ liệu
-                foreach ($request->file('newImage') as $image) {
+                foreach ($request->file('newImages') as $image) {
                     $imageName = time() . '_' . uniqid() . '.' . $image->extension();
                     $image->move(public_path('products_img'), $imageName);
     
                     // Tạo mới bản ghi hình ảnh
-                    $product->productImage()->create([
+                    ProductImage::create([
+                        'product_id' => $productId,
                         'path' => $imageName,
                     ]);
                 }
@@ -418,6 +384,5 @@ public function selectColor(Request $request, $id)
         }
     }
     
-     
 }
 
